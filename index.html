@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>チャットアプリ</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1, width=device-width" />
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+        <style>
+            .bg-gg{
+                background-color:  #EEEEEE;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar is-info" role="navigation" aria-label="main navigation">
+            <div class="has-text-centered">
+                <h1 class="is-size-3">簡易リアルチャットアプリ</h1>
+            </div>
+        </nav>
+        <main>
+            <div id="messages">
+            </div>
+        </main>
+        <footer style="background-color:#EEEEEE;">
+            <form action="" id="form" name="form1" method="post">
+                <div class="field m-4">
+                    <div class="columns is-mobile">
+                        <div class="column is-half">
+                            <p>アイコン</p>
+                            <div class="select">
+                                <select id="proimg">
+                                    <option value="1">男性1</option>
+                                    <option value="2">女性1</option>
+                                    <option value="3">男性2</option>
+                                    <option value="4">女性2</option>
+                                    <option value="5">男性3</option>
+                                    <option value="6">男性4</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <p>名前</p>
+                            <div class="control">
+                                <input id="name" class="input" type="text" name="user-name" value="ユーザ">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field m-4">
+                    <div class="is-flex is-align-content-center">
+                        <input class="input" id="input" type="text" placeholder="コメント">
+                        <button class="button is-link">送信</button>
+                    </div>
+                </div>
+            </form>
+        </footer>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            let socket = io();
+
+            //コメントの取得
+            const form = document.getElementById("form");
+            const input = document.getElementById("input");
+            const messages = document.getElementById("messages");
+
+            //プロフィール画像番号の取得
+            const pro_num = document.getElementById( "proimg" ) ;
+            //ユーザ名の取得
+            const user_name = document.getElementById("name");
+
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const data = {
+                    message: input.value,
+                    image: pro_num.value,
+                    name: user_name.value,
+                }
+
+                //送信
+                if(input.value && pro_num && user_name){
+                    socket.emit("chat data", data);
+                    input.value = "";
+                }
+            });
+
+            socket.on("chat data", function(msg){
+
+                //大枠divの作成
+                let item = document.createElement("div");
+                item.className = "box m-2";
+
+                //大枠divのcolumnsの作成
+                let item2 = document.createElement("div");
+                item2.className = "columns is-mobile"
+
+                /* 1つめのdiv　*/
+                let miniitem = document.createElement("div");
+                miniitem.className = "column is-one-fifth";
+                let figure = document.createElement("Figure")
+                figure.className = "image is-64x64"
+                let imag = document.createElement("img")
+                imag.className="is-rounded"
+
+                let url = "imgs/boy.svg";
+                switch(msg.image){
+                    case "2":
+                        url = "imgs/female.svg";
+                        break;
+                    case "3":
+                        url = "imgs/male.svg";
+                        break;
+                    case "4":
+                        url = "imgs/girl.svg";
+                        break;
+                    case "5":
+                        url = "imgs/malecostume.svg";
+                        break;
+                    case "6":
+                        url = "imgs/matureman1.svg";
+                        break;
+                }
+                imag.src = url;
+
+                miniitem.appendChild(figure).appendChild(imag);
+
+                /* 2つめのdiv*/
+                let miniitem2 = document.createElement("div");
+                miniitem2.className = "column is-3 pt-5";
+                let hehe = document.createElement("h1");
+                hehe.textContent = msg.name;
+
+                miniitem2.appendChild(hehe);
+
+                /* 3つめのdiv */
+                let miniitem3 = document.createElement("div");
+                miniitem3.className = "column bg-gg";
+                miniitem3.textContent = msg.message;
+
+                //全部合体
+                let fragment = document.createDocumentFragment();
+                fragment.append(miniitem);
+                fragment.append(miniitem2);
+                fragment.append(miniitem3);
+
+                messages.appendChild(item).appendChild(item2).appendChild(fragment);
+            });
+        </script>
+    </body>
+</html>
